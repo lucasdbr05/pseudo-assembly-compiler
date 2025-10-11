@@ -54,6 +54,8 @@ const set<string> opcodeNames = {
     "STOP",
     "MACRO",
     "ENDMACRO",
+    "SPACE",
+    "CONST"
 };
 
 
