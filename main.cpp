@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include "PreProcessor.hpp"
+#include "Compiler.hpp"
 #define endl '\n'
 
 int main(int argc, char* argv[]) {
@@ -15,7 +16,7 @@ int main(int argc, char* argv[]) {
 
     FileHandler fileHandler = FileHandler(filename);
     PreProcessor pp = PreProcessor(fileHandler);
-    
+
     pp.preProcessAsmCode();
 
     return 0;

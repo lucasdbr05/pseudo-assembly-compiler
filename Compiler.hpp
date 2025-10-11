@@ -1,5 +1,10 @@
 class Compiller {
 public:
+    void compile() {
+        o1();
+        o2();
+    }
+
     void o1 () {
 
     }
@@ -7,5 +12,8 @@ public:
     void o2() {
 
     }
+
+private:
+    
 
 };

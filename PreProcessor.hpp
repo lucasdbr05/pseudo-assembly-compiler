@@ -1,6 +1,6 @@
 #pragma once
 #include <bits/stdc++.h>
-#include "Operations.hpp"
+#include "Symbols.hpp"
 #include "FileHandler.hpp"
 
 using namespace std;
@@ -206,7 +206,7 @@ private:
     vector<string> normalizedDefaultTokens(vector<string> tokens) {
         for(int i=0; i<tokens.size(); i++) {
             string uppercasedToken = toUppercase(tokens[i]);
-            if(opcodeNames.count(uppercasedToken)) {
+            if(defaultNames.count(uppercasedToken)) {
                 tokens[i] = uppercasedToken;
             }
         }
