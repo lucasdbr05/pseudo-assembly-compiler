@@ -37,11 +37,11 @@ const vector<Operation> operations = {
 };
 
 
-unordered_map<string, Operation> operationsMap() {
+unordered_map<string, Operation> getOperationsMap() {
     unordered_map<string, Operation> m;
     if (m.empty()) {
         for (const auto& op : operations) {
-            m[to_string(op.opcode)] = op;
+            m[op.code] = op;
         }
     }
     return m;
