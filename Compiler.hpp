@@ -26,4 +26,12 @@ public:
 private:
     FileHandler fileHandler;
 
+    vector<string> getPreProcessCode() {
+        return fileHandler.readFileLines();
+    }
+
+    vector<vector<string>> splitTokens() {
+        
+    }
+
 };

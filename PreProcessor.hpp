@@ -2,6 +2,7 @@
 #include <bits/stdc++.h>
 #include "Symbols.hpp"
 #include "FileHandler.hpp"
+#include "Utils.hpp"
 
 using namespace std;
 
@@ -249,23 +250,5 @@ private:
 
         for(auto& line: content) result += line + "\n";
         return result;
-    }
-
-
-    bool isAlphaNumeric(char c, bool isLabel = false) {
-        return ('0' <= c && c <= '9') || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || (isLabel && c == ':');
-    }
-
-    bool isEmpty(char c) {
-        return c == ' ' || c == '\t' || c == '\n' || c == '\r';
-    }
-
-    bool isSimbol(char c) {
-        return c == ',' || c == '+' || c == '-';
-    }
-
-    string toUppercase(string str) {
-        for (char& c : str) c = toupper(c);
-        return str;
     }
 };
