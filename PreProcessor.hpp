@@ -5,6 +5,18 @@
 
 using namespace std;
 
+
+struct Macro {
+    string name;
+    vector<vector<string>> definition;
+    int argumentsQtt;
+
+    Macro() = default;
+
+    Macro(string _name, vector<vector<string>> _definition, int _arguments) 
+        : name(_name), definition(_definition), argumentsQtt(_arguments) {}
+};;
+
 class PreProcessor {
 public:
     PreProcessor(FileHandler fh) : fileHandler(fh) {}
@@ -15,9 +27,10 @@ public:
 
         vector<vector<string>> normalizedContent = getNormalizedLineContent(asmCodeLines);
 
-        vector<string> structuredContent = structureNormalizedContent(normalizedContent);
+        vector<string> structuredContent = structureContent(normalizedContent);
+        
         string finalContent =  joinFinalContent(structuredContent);
-        // TODO: expand macros
+
         fileHandler.writeFile(".pre", finalContent);
     }
 
@@ -25,7 +38,8 @@ public:
 private:
     
     FileHandler fileHandler;
-    unordered_map<string, Operation> operationsMap = getOperationsMap();
+
+    map<string, Macro> macroNameDefinitionTable; 
 
     vector<string> getAsmCode() {
         return fileHandler.readFileLines();
@@ -39,7 +53,7 @@ private:
 
             string lineWithoutComments = stripComments(line);
             vector<string> splitedLine = splitLine(lineWithoutComments);
-            splitedLine = normalizedOpcodes(splitedLine);
+            splitedLine = normalizedDefaultTokens(splitedLine);
             
             if(splitedLine.size() == 0) continue;
 
@@ -48,29 +62,50 @@ private:
         return strucuturedContent;
     }
 
-    vector<string> structureNormalizedContent(vector<vector<string>>& normalizedContent){
+    vector<string> structureContent(vector<vector<string>>& normalizedContent){
         vector<string> structuredContent;
         string content;
-
-        for(auto& line: normalizedContent) {
+        int contentSize = normalizedContent.size();
+        for(int i=0; i< contentSize; i++) {
+            vector<string> line = normalizedContent[i];
             int initLoopIndex = 0;
+
             if(line[0].back() == ':') {
+                bool isMacroDefinition = line.size() > 1 && toUppercase(line[1]) == "MACRO";
+                if(isMacroDefinition) {
+                    i = storeMacroDefinition(normalizedContent, i);
+                    continue;
+                }
+                
                 content += line[0] + " ";
                 initLoopIndex = 1;
-                if(line.size() ==1) continue;
+                if(line.size() == 1) continue;
+            }
+            
+            vector<vector<string>> lines = {line};
+            
+            bool isUsingMacro = macroNameDefinitionTable.count(line[0]);
+            if(isUsingMacro) {
+                vector<string> arguments;
+                for(int i=1; i< line.size(); i++) {
+                    bool isArgument = isAlphaNumeric(line[i][0]);
+                    if(isArgument) arguments.push_back(line[i]);
+                } 
+                lines = macroExpantion(line[0], arguments);
             }
 
-
-            for(int i=initLoopIndex; i<line.size(); i++) {
-                if(line[i].size() ==1 && isSimbol(line[i][0])) {
-                    content[content.size() - 1] = line[i][0];
-                    content += (content.back() == ',' ? " ": "");
-                } else {
-                    content += line[i] + " ";
+            for(auto& line: lines) {   
+                for(int i=initLoopIndex; i<line.size(); i++) {
+                    if(line[i].size() ==1 && isSimbol(line[i][0])) {
+                        content[content.size() - 1] = line[i][0];
+                        content += (content.back() == ',' ? " ": "");
+                    } else {
+                        content += line[i] + " ";
+                    }
                 }
+                structuredContent.push_back(content);
+                content= "";
             }
-            structuredContent.push_back(content);
-            content= "";
         }
 
         if (content.size() > 0) {
@@ -81,9 +116,44 @@ private:
         return structuredContent;
     }
 
-    vector<string> macroExpander() {
-        //TODO
-        return vector<string>();
+    vector<vector<string>> macroExpantion(
+        string macroName, 
+        vector<string> arguments
+    ) {
+        Macro macro = macroNameDefinitionTable[macroName];
+        map<string, string> macroArguments;
+
+        vector<vector<string>> newCode = macro.definition;
+        vector<vector<string>> result;
+
+        for(int i=0; i<arguments.size(); i++) {
+            string arg = "#"+to_string(i+1);
+            macroArguments[arg] = arguments[i];
+        }
+
+        for(int i=0; i<newCode.size(); i++) {
+            bool isUsingMacro = macroNameDefinitionTable.count(newCode[i][0]);
+            vector<vector<string>> lines = {newCode[i]};
+            if(isUsingMacro) {
+                vector<string> arguments;
+                for(int j=1; j< newCode[i].size(); j++) {
+                    bool isArgument = isAlphaNumeric(newCode[i][j][0]);
+                    if(isArgument) arguments.push_back(newCode[i][j]);
+                } 
+                lines = macroExpantion(newCode[i][0], arguments);
+            }
+
+            for(auto& line:lines) {
+                for(auto& token: line) {
+                    if(macroArguments.count(token)) {
+                        token = macroArguments[token];
+                    }
+                }
+                result.push_back(line);
+            }
+        }
+
+        return result;
     }
 
     string stripComments(const string& line, char commentChar = ';') {
@@ -133,15 +203,44 @@ private:
         return tokens;
     }
 
-    vector<string> normalizedOpcodes(vector<string> tokens) {
+    vector<string> normalizedDefaultTokens(vector<string> tokens) {
         for(int i=0; i<tokens.size(); i++) {
             string uppercasedToken = toUppercase(tokens[i]);
-            if(operationsMap.count(uppercasedToken)) {
+            if(opcodeNames.count(uppercasedToken)) {
                 tokens[i] = uppercasedToken;
             }
         }
         return tokens;
     }
+
+    int storeMacroDefinition(vector<vector<string>>& codeLines, int currentIndex) {
+        map<string, string> correspondentArguments;
+        string macroName = codeLines[currentIndex][0]; macroName.pop_back();
+        vector<vector<string>> macroDefinition;
+        for(int i=2; i<codeLines[currentIndex].size(); i++){
+            string argument = codeLines[currentIndex][i];
+            correspondentArguments[argument] = "#" + to_string((i-1));
+        }
+        currentIndex++;
+        while(
+            currentIndex < codeLines.size() && 
+            codeLines[currentIndex].size() != 0 && 
+            codeLines[currentIndex][0] != "ENDMACRO"
+        ) {
+            for(int i=0; i<codeLines[currentIndex].size(); i++) {
+                string& currentToken = codeLines[currentIndex][i];
+                if(correspondentArguments.count(currentToken)) {
+                    currentToken = correspondentArguments[currentToken];
+                }
+            }
+            macroDefinition.push_back(codeLines[currentIndex]);
+            currentIndex++;
+        }
+
+        macroNameDefinitionTable[macroName] = Macro(macroName, macroDefinition, correspondentArguments.size());
+        return currentIndex;
+    }
+
 
     string joinFinalContent(vector<string> content) {
         string result = "";

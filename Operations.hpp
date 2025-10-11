@@ -37,14 +37,23 @@ const vector<Operation> operations = {
 };
 
 
-unordered_map<string, Operation> getOperationsMap() {
-    unordered_map<string, Operation> m;
-    if (m.empty()) {
-        for (const auto& op : operations) {
-            m[op.code] = op;
-        }
-    }
-    return m;
-}
+const set<string> opcodeNames = {
+    "ADD",
+    "SUB",
+    "MULT",
+    "DIV",
+    "JMP",
+    "JMPN",
+    "JMPP",
+    "JMPZ",
+    "COPY",
+    "LOAD",
+    "STORE",
+    "INPUT",
+    "OUTPUT",
+    "STOP",
+    "MACRO",
+    "ENDMACRO",
+};
 
 
