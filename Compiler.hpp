@@ -1,3 +1,11 @@
+#pragma once
+#include <bits/stdc++.h>
+#include "Symbols.hpp"
+#include "FileHandler.hpp"
+#include "ErrorHandler.hpp"
+
+using namespace std;
+
 class Compiller {
 public:
     void compile() {
@@ -14,6 +22,6 @@ public:
     }
 
 private:
-    
+
 
 };

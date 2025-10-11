@@ -57,7 +57,7 @@ private:
         }
         cerr << "[" << typeStr << " " << "ERROR "<< "] ";
         if (error.line != 0) {
-            cerr << "Linha " << error.line << ": ";
+            cerr << "Line " << error.line << ": ";
         }
         cerr << error.message << endl;
     }

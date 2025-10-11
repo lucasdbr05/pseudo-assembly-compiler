@@ -13,7 +13,7 @@ public:
         ifstream file(filename);
         
         if (!file.is_open()) {
-            throw runtime_error("Erro ao abrir o arquivo: " + filename);
+            throw runtime_error("Error opening file: " + filename);
         }
         
         stringstream buffer;
@@ -27,7 +27,7 @@ public:
         ifstream file(filename);
         
         if (!file.is_open()) {
-            throw runtime_error("Erro ao abrir o arquivo: " + filename);
+            throw runtime_error("Error opening file: " + filename);
         }
         
         vector<string> lines;
@@ -47,7 +47,7 @@ public:
         ofstream file(outputFilename);
         
         if (!file.is_open()) {
-            throw runtime_error("Erro ao criar o arquivo: " + outputFilename);
+            throw runtime_error("Error creating file: " + outputFilename);
         }
         
         file << content;
@@ -60,7 +60,7 @@ public:
         ofstream file(outputFilename);
         
         if (!file.is_open()) {
-            throw runtime_error("Erro ao criar o arquivo: " + outputFilename);
+            throw runtime_error("Error creating file: " + outputFilename);
         }
         
         for (size_t i = 0; i < lines.size(); i++) {
