@@ -9,7 +9,7 @@ bool isEmpty(char c) {
     return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
-bool isSimbol(char c) {
+bool isSplitterOrOperator(char c) {
     return c == ',' || c == '+' || c == '-';
 }
 

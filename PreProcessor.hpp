@@ -99,7 +99,7 @@ private:
 
             for(auto& line: lines) {   
                 for(int i=initLoopIndex; i<line.size(); i++) {
-                    if(line[i].size() ==1 && isSimbol(line[i][0])) {
+                    if(line[i].size() ==1 && isSplitterOrOperator(line[i][0])) {
                         content[content.size() - 1] = line[i][0];
                         content += (content.back() == ',' ? " ": "");
                     } else {
@@ -193,7 +193,7 @@ private:
             if(r>l){
                 tokens.push_back(line.substr(l, r-l));
             }
-            if(isSimbol(line[r])) {
+            if(isSplitterOrOperator(line[r])) {
                 tokens.push_back(line.substr(r, 1));
                 r++;
             }
