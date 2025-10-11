@@ -77,15 +77,19 @@ public:
         return filename;
     }
 
-    private:
-        string filename;
-        
-        string removeExtension(const string& name) {
-            size_t lastDot = name.find_last_of(".");
-            if (lastDot == string::npos) {
-                return name;
-            }
-            return name.substr(0, lastDot);
+    string getFilenameWithoutExtension() {
+        return removeExtension(filename);
+    }
+
+private:
+    string filename;
+    
+    string removeExtension(const string& name) {
+        size_t lastDot = name.find_last_of(".");
+        if (lastDot == string::npos) {
+            return name;
         }
+        return name.substr(0, lastDot);
+    }
 
 };

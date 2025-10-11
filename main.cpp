@@ -15,9 +15,15 @@ int main(int argc, char* argv[]) {
 
 
     FileHandler fileHandler = FileHandler(filename);
-    PreProcessor pp = PreProcessor(fileHandler);
+    PreProcessor preProcessor = PreProcessor(fileHandler);
 
-    pp.preProcessAsmCode();
+
+    FileHandler preProcessFileHandler = preProcessor.preProcessAsmCode();
+
+
+    Compiller compiler = Compiller(preProcessFileHandler);
+
+    compiler.compile();
 
     return 0;
 }

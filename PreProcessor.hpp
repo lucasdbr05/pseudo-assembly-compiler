@@ -21,7 +21,7 @@ class PreProcessor {
 public:
     PreProcessor(FileHandler fh) : fileHandler(fh) {}
     
-    void preProcessAsmCode() {
+    FileHandler preProcessAsmCode() {
         vector<string> preProcessedCode;
         vector<string> asmCodeLines = getAsmCode();
 
@@ -32,6 +32,8 @@ public:
         string finalContent =  joinFinalContent(structuredContent);
 
         fileHandler.writeFile(".pre", finalContent);
+
+        return FileHandler(fileHandler.getFilenameWithoutExtension() + ".pre");
     }
 
 

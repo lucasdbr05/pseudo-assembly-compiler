@@ -8,6 +8,8 @@ using namespace std;
 
 class Compiller {
 public:
+    Compiller(FileHandler fileHandler) : fileHandler(fileHandler) {}
+
     void compile() {
         o1();
         o2();
@@ -22,6 +24,6 @@ public:
     }
 
 private:
-
+    FileHandler fileHandler;
 
 };
