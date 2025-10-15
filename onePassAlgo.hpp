@@ -12,7 +12,7 @@ using namespace std;
 class OnePassAlgo {
 
     public:
-        OnePassAlgo(vector<vector<string>> inAsm) : asmCode(inAsm){
+        OnePassAlgo(vector<vector<string>> inAsm) : asmCode(inAsm), memo(vector<int>(216)){
 
             errHandler = ErrorHandler();
         };
@@ -25,7 +25,7 @@ class OnePassAlgo {
 
                 if(line[whereIAmInLine].back() == ':'){
                     line[whereIAmInLine].pop_back();
-                    auto [pos, seen, links] = symbolListo2[line[whereIAmInLine]];
+                    auto [pos, seen, links] = symbolList[line[whereIAmInLine]];
                     if(seen)
                         errHandler.logSemanticError("Redefining Label", (int)(wordsOccupied.size())+1);
 
@@ -80,14 +80,15 @@ class OnePassAlgo {
                     if(symbolList.count(line[i])){
 
                         auto[pos, seen, links] = symbolList[line[i]];
-                        links.push_back(memPos);
+                        if(seen) memo[memoPos] = pos;
+                        else links.push_back(memoPos);
                         symbolList[line[i]] = make_tuple(pos, seen, links);
-                        memPos++;
+                        memoPos++;
                         continue;
                     }
 
-                    symbolList[line[i]] = make_tuple(-1, false, vector<int>({-1, memPos}));
-                    memPos++;
+                    symbolList[line[i]] = make_tuple(-1, false, vector<int>({-1, memoPos}));
+                    memoPos++;
                 }
             }
             o1();
@@ -98,7 +99,7 @@ class OnePassAlgo {
         vector<vector<string>> asmCode;
         ErrorHandler errHandler;
         map<string, tuple<int, bool, vector<int>>> symbolList;
-        vector<int> memo(216);
+        vector<int> memo;
         vector<int> wordsOccupied;
         int memoPos = 0;
 
