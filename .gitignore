@@ -1,5 +1,7 @@
 compiler
 *.pre
 *.asm
+*.o1
+*.o2
 .vscode
 /tests
