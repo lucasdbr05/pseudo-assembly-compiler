@@ -12,7 +12,7 @@ using namespace std;
 class OnePassAlgo {
 
     public:
-        OnePassAlgo(vector<vector<string>> inAsm) : asmCode(inAsm), memo(vector<int>(216, -1)){
+        OnePassAlgo(vector<vector<string>> inAsm, FileHandler fh) : asmCode(inAsm), memo(vector<int>(216, -1)), fileHandler(fh){
 
             errHandler = ErrorHandler();
         };
@@ -58,7 +58,7 @@ class OnePassAlgo {
                 ){
                      errHandler.logSyntaxError("This number of parameters is not supported", (int)(wordsOccupied.size())+1);
                 }
-                
+
                 if(operation.code == "SPACE"){
 
                     if((line.size() - whereIAmInLine) > operation.parameter_spaces)
@@ -69,6 +69,7 @@ class OnePassAlgo {
                     if(line.size() == whereIAmInLine+1) jmp++;
                     else jmp += stoi(line[whereIAmInLine+1]);
 
+                    wordsOccupied.push_back(jmp);
                     memoPos += jmp;
                     continue;
                 }
@@ -82,6 +83,7 @@ class OnePassAlgo {
 
                     memo[memoPos] = stoi(line[whereIAmInLine+1]);
 
+                    wordsOccupied.push_back(jmp);
                     memoPos += jmp;
                     continue;
                 }
@@ -106,6 +108,8 @@ class OnePassAlgo {
                     symbolList[line[i]] = make_tuple(-1, false, vector<int>({-1, memoPos}));
                     memoPos++;
                 }
+
+                wordsOccupied.push_back(line.size());
             }
             o1();
             o2();
@@ -114,15 +118,83 @@ class OnePassAlgo {
     private:
         vector<vector<string>> asmCode;
         ErrorHandler errHandler;
-        map<string, tuple<int, bool, vector<int>>> symbolList;
+        unordered_map<string, tuple<int, bool, vector<int>>> symbolList;
         vector<int> memo;
         vector<int> wordsOccupied;
+        FileHandler fileHandler;
         int memoPos = 0;
 
         void o1(){
-
         }
 
         void o2(){
+
+            for(auto[ini, ti] : symbolList){
+
+                auto[val, seen, links] = ti;
+
+                while(links.back() != -1){
+
+                    memo[links.back()] = val;
+                    links.pop_back();
+                }
+            }
+
+            vector<string> lines;
+
+            int memoPos = 0, id = 0;
+
+            while(id < wordsOccupied.size()){
+
+                string line = "end ";
+
+                line += (to_string(memoPos)) + ": ";
+
+                while(wordsOccupied[id]){
+
+                    line += (to_string(memo[memoPos])) + " ";
+                    memoPos++;
+                    wordsOccupied[id]--;
+                }
+                line.push_back('\n');
+                lines.push_back(line);
+                id++;
+            }
+            
+            lines.push_back("\n\n");
+
+            auto smbList = convertSymbolList();
+
+            for(auto line : smbList)
+                lines.push_back(line);
+            
+            fileHandler.writeFile(".o2", lines);
+        }
+
+        vector<string> convertSymbolList(){
+            
+            vector<string> tbl;
+
+            tbl.push_back("Simbolo  |  valor  |  definido  |  lista de pendencias  \n");
+
+            for(auto[simbolo, ti] : symbolList){
+
+                auto[val, seen, links] = ti;
+
+                string line = simbolo + "  |  " + to_string(val)  + 
+                "  |  " + to_string(seen) + "  |  [";
+
+                string lista = "";
+
+                int id = links.size()-1;
+                while(id > 0){
+                    lista += to_string(links[id]) + ", ";
+                    id--;
+                }
+
+                line += lista + to_string(links[0]) + "]  \n";
+            }
+
+            return tbl;
         }
 };

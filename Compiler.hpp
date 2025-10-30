@@ -15,7 +15,7 @@ public:
         vector<string> code = getPreProcessCode();
         vector<vector<string>> tokensByLine = getSplittedCode(code);
 
-        auto op = OnePassAlgo(tokensByLine);
+        auto op = OnePassAlgo(tokensByLine, fileHandler);
 
         op.runAlgo();
     }
