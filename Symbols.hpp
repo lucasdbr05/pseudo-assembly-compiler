@@ -35,7 +35,9 @@ const vector<Symbol> symbols = {
     Symbol("STORE", 11, 1),
     Symbol("INPUT", 12, 1),
     Symbol("OUTPUT", 13, 1),
-    Symbol("STOP", 14, 0)
+    Symbol("STOP", 14, 0),
+    Symbol("SPACE", NULL, 1),
+    Symbol("CONST", NULL, 1)
 };
 
 

@@ -26,13 +26,14 @@ class OnePassAlgo {
                 if(line[whereIAmInLine].back() == ':'){
                     line[whereIAmInLine].pop_back();
                     auto [pos, seen, links] = symbolList[line[whereIAmInLine]];
+
                     if(seen)
                         errHandler.logSemanticError("Redefining Label", (int)(wordsOccupied.size())+1);
 
                     if(!links.size()){
                         symbolList[line[whereIAmInLine]] = make_tuple(memoPos, true, vector<int>({-1}));
                     }else{
-                        symbolList[line[whereIAmInLine]] = make_tuple(pos, true, links);
+                        symbolList[line[whereIAmInLine]] = make_tuple(memoPos, true, links);
                     }
 
                     whereIAmInLine++;
@@ -52,8 +53,9 @@ class OnePassAlgo {
                     }
                 }
                 
+
                 if(
-                    (line.size() - whereIAmInLine) != operation.parameter_spaces &&
+                    (line.size() - whereIAmInLine-1) != operation.parameter_spaces &&
                     operation.code != "SPACE"
                 ){
                      errHandler.logSyntaxError("This number of parameters is not supported", (int)(wordsOccupied.size())+1);
@@ -61,7 +63,8 @@ class OnePassAlgo {
 
                 if(operation.code == "SPACE"){
 
-                    if((line.size() - whereIAmInLine) > operation.parameter_spaces)
+
+                    if((line.size() - whereIAmInLine-1) > operation.parameter_spaces)
                         errHandler.logSyntaxError("This number of parameters is not supported", (int)(wordsOccupied.size())+1);
 
                     int jmp = 0;
@@ -76,7 +79,7 @@ class OnePassAlgo {
 
                 if(operation.code == "CONST"){
 
-                    if((line.size() - whereIAmInLine) != operation.parameter_spaces)
+                    if((line.size() - whereIAmInLine-1) != operation.parameter_spaces)
                         errHandler.logSyntaxError("This number of parameters is not supported", (int)(wordsOccupied.size())+1);
 
                     int jmp = 1;
@@ -90,13 +93,14 @@ class OnePassAlgo {
                 
                 memo[memoPos]= operation.opcode;
                 memoPos++;
+                whereIAmInLine++;
                 wordsOccupied.push_back(1+operation.parameter_spaces);
                 
 
                 for(int i = whereIAmInLine; i < line.size(); i++){
 
                     if(symbolList.count(line[i])){
-
+                        
                         auto[pos, seen, links] = symbolList[line[i]];
                         if(seen) memo[memoPos] = pos;
                         else links.push_back(memoPos);
@@ -104,6 +108,8 @@ class OnePassAlgo {
                         memoPos++;
                         continue;
                     }
+
+                    // cout << line[i] << '\n';
 
                     symbolList[line[i]] = make_tuple(-1, false, vector<int>({-1, memoPos}));
                     memoPos++;
@@ -191,11 +197,6 @@ class OnePassAlgo {
             }
             
             lines.push_back("\n\n");
-
-            auto smbList = convertSymbolList();
-
-            for(auto line : smbList)
-                lines.push_back(line);
             
             fileHandler.writeFile(".o2", lines);
         }
@@ -222,6 +223,8 @@ class OnePassAlgo {
                 }
 
                 line += lista + to_string(links[0]) + "]  \n";
+
+                tbl.push_back(line);
             }
 
             return tbl;
