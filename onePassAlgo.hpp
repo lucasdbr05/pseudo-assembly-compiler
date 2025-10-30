@@ -58,6 +58,7 @@ class OnePassAlgo {
                 ){
                      errHandler.logSyntaxError("This number of parameters is not supported", (int)(wordsOccupied.size())+1);
                 }
+                
                 if(operation.code == "SPACE"){
 
                     if((line.size() - whereIAmInLine) > operation.parameter_spaces)
