@@ -12,7 +12,7 @@ using namespace std;
 class OnePassAlgo {
 
     public:
-        OnePassAlgo(vector<vector<string>> inAsm) : asmCode(inAsm), memo(vector<int>(216)){
+        OnePassAlgo(vector<vector<string>> inAsm) : asmCode(inAsm), memo(vector<int>(216, -1)){
 
             errHandler = ErrorHandler();
         };
@@ -30,7 +30,7 @@ class OnePassAlgo {
                         errHandler.logSemanticError("Redefining Label", (int)(wordsOccupied.size())+1);
 
                     if(!links.size()){
-                        symbolList[line[whereIamInLine]] = make_tuple(memoPos, true, vector<int>({-1}));
+                        symbolList[line[whereIAmInLine]] = make_tuple(memoPos, true, vector<int>({-1}));
                     }else{
                         symbolList[line[whereIAmInLine]] = make_tuple(pos, true, links);
                     }
@@ -51,10 +51,6 @@ class OnePassAlgo {
                         break; 
                     }
                 }
-
-                memo[memoPos]= operation.opcode;
-                memoPos++;
-                wordsOccupied.push_back(1+operation.parameter_spaces);
                 
                 if(
                     (line.size() - whereIAmInLine) != operation.parameter_spaces &&
@@ -62,18 +58,37 @@ class OnePassAlgo {
                 ){
                      errHandler.logSyntaxError("This number of parameters is not supported", (int)(wordsOccupied.size())+1);
                 }
+                if(operation.code == "SPACE"){
 
-                if(operation.code == "SPACE" && (line.size() - whereIAmInLine) > operation.parameter_spaces)
-                     errHandler.logSyntaxError("This number of parameters is not supported", (int)(wordsOccupied.size())+1);
-                
-                if(operation.code == "SPACE" && operation.code == "CONST"){
+                    if((line.size() - whereIAmInLine) > operation.parameter_spaces)
+                        errHandler.logSyntaxError("This number of parameters is not supported", (int)(wordsOccupied.size())+1);
 
-                    if (!(line.size() - whereIAmInLine)) memo[memoPos] = 0;
-                    else memo[memoPos]= stoi(line[whereIAmInLine]);
+                    int jmp = 0;
 
-                    memoPos++;
+                    if(line.size() == whereIAmInLine+1) jmp++;
+                    else jmp += stoi(line[whereIAmInLine+1]);
+
+                    memoPos += jmp;
                     continue;
                 }
+
+                if(operation.code == "CONST"){
+
+                    if((line.size() - whereIAmInLine) != operation.parameter_spaces)
+                        errHandler.logSyntaxError("This number of parameters is not supported", (int)(wordsOccupied.size())+1);
+
+                    int jmp = 1;
+
+                    memo[memoPos] = stoi(line[whereIAmInLine+1]);
+
+                    memoPos += jmp;
+                    continue;
+                }
+                
+                memo[memoPos]= operation.opcode;
+                memoPos++;
+                wordsOccupied.push_back(1+operation.parameter_spaces);
+                
 
                 for(int i = whereIAmInLine; i < line.size(); i++){
 
@@ -104,6 +119,7 @@ class OnePassAlgo {
         int memoPos = 0;
 
         void o1(){
+
         }
 
         void o2(){
