@@ -23,7 +23,7 @@ public:
     }
 
     void o2() {
-
+        
     }
 
 private:
