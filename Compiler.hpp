@@ -3,6 +3,7 @@
 #include "Symbols.hpp"
 #include "FileHandler.hpp"
 #include "ErrorHandler.hpp"
+#include "onePassAlgo.hpp"
 
 using namespace std;
 
@@ -14,16 +15,8 @@ public:
         vector<string> code = getPreProcessCode();
         vector<vector<string>> tokensByLine = getSplittedCode(code);
 
-        o1();
-        o2();
-    }
-
-    void o1 () {
-
-    }
-
-    void o2() {
-        
+        OnePassAlgo algo(tokensByLine, fileHandler);
+        algo.runAlgo();
     }
 
 private:
