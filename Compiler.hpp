@@ -4,6 +4,7 @@
 #include "FileHandler.hpp"
 #include "ErrorHandler.hpp"
 #include "onePassAlgo.hpp"
+#include "Utils.hpp"
 
 using namespace std;
 
@@ -46,6 +47,7 @@ private:
 
             if(r>l){
                 tokens.push_back(line.substr(l, r-l));
+                l = r;
             }
            
             while(l<string_size && (isEmpty(line[l])|| isSplitterOrOperator(line[l]))) l++;
@@ -54,6 +56,5 @@ private:
 
         return tokens;
     }
-
 
 };
