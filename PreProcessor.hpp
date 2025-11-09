@@ -91,8 +91,9 @@ private:
             if(isUsingMacro) {
                 vector<string> arguments;
                 for(int i=1; i< line.size(); i++) {
-                    bool isArgument = isAlphaNumeric(line[i][0]);
-                    if(isArgument) arguments.push_back(line[i]);
+                    if(line[i] != ",") {
+                        arguments.push_back(line[i]);
+                    }
                 } 
                 lines = macroExpantion(line[0], arguments);
             }
@@ -134,19 +135,18 @@ private:
             macroArguments[arg] = arguments[i];
         }
 
-        for(int i=0; i<newCode.size(); i++) {
+            for(int i=0; i<newCode.size(); i++) {
             bool isUsingMacro = macroNameDefinitionTable.count(newCode[i][0]);
             vector<vector<string>> lines = {newCode[i]};
             if(isUsingMacro) {
                 vector<string> arguments;
                 for(int j=1; j< newCode[i].size(); j++) {
-                    bool isArgument = isAlphaNumeric(newCode[i][j][0]);
-                    if(isArgument) arguments.push_back(newCode[i][j]);
+                    if(newCode[i][j] != ",") {
+                        arguments.push_back(newCode[i][j]);
+                    }
                 } 
                 lines = macroExpantion(newCode[i][0], arguments);
-            }
-
-            for(auto& line:lines) {
+            }            for(auto& line:lines) {
                 for(auto& token: line) {
                     if(macroArguments.count(token)) {
                         token = macroArguments[token];
@@ -231,9 +231,13 @@ private:
         map<string, string> correspondentArguments;
         string macroName = codeLines[currentIndex][0]; macroName.pop_back();
         vector<vector<string>> macroDefinition;
+        int argIndex = 1;
         for(int i=2; i<codeLines[currentIndex].size(); i++){
             string argument = codeLines[currentIndex][i];
-            correspondentArguments[argument] = "#" + to_string((i-1));
+            if(argument != ",") {
+                correspondentArguments[argument] = "#" + to_string(argIndex);
+                argIndex++;
+            }
         }
         currentIndex++;
         while(

@@ -3,7 +3,7 @@
 using namespace std;
 
 inline bool isAlphaNumeric(char c, bool isLabel = false) {
-    return ('0' <= c && c <= '9') || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || (isLabel && c == ':');
+    return ('0' <= c && c <= '9') || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || c == '_' || (isLabel && c == ':');
 }
 
 inline bool isEmpty(char c) {
@@ -17,4 +17,15 @@ inline bool isSplitterOrOperator(char c) {
 inline string toUppercase(string str) {
     for (char& c : str) c = toupper(c);
     return str;
+}
+
+inline bool isNumeric(char c){
+
+    return ('0' <= c && c <= '9');
+}
+
+inline bool isANum(string s) {
+    bool ans = true;
+    for(auto &c : s) ans &= isNumeric(c);
+    return ans;
 }
