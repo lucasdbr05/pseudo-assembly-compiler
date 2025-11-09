@@ -43,14 +43,14 @@ private:
         r=l;
 
         while(r<string_size) {
-            while(r < string_size && !isEmpty(line[r]) && !isSplitterOrOperator(line[r])) r++;
+            while(r < string_size && !isEmpty(line[r]) && line[r] != ',') r++;
 
             if(r>l){
                 tokens.push_back(line.substr(l, r-l));
                 l = r;
             }
            
-            while(l<string_size && (isEmpty(line[l])|| isSplitterOrOperator(line[l]))) l++;
+            while(l<string_size && (isEmpty(line[l]) || line[l] == ',')) l++;
             r = l;
         }
 

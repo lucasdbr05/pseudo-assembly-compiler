@@ -87,22 +87,35 @@ private:
             
             vector<vector<string>> lines = {line};
             
-            bool isUsingMacro = macroNameDefinitionTable.count(line[0]);
+            bool isUsingMacro = macroNameDefinitionTable.count(line[initLoopIndex]);
             if(isUsingMacro) {
                 vector<string> arguments;
-                for(int i=1; i< line.size(); i++) {
+                for(int i=initLoopIndex+1; i< line.size(); i++) {
                     if(line[i] != ",") {
                         arguments.push_back(line[i]);
                     }
                 } 
-                lines = macroExpantion(line[0], arguments);
+                lines = macroExpantion(line[initLoopIndex], arguments);
             }
 
             for(auto& line: lines) {   
-                for(int i=initLoopIndex; i<line.size(); i++) {
+                int startIndex = isUsingMacro ? 0 : initLoopIndex;
+                for(int i=startIndex; i<line.size(); i++) {
                     if(line[i].size() ==1 && isSplitterOrOperator(line[i][0])) {
-                        content[content.size() - 1] = line[i][0];
-                        content += (content.back() == ',' ? " ": "");
+                        if(line[i][0] == ',') {
+                            content[content.size() - 1] = line[i][0];
+                            content += " ";
+                        } else {
+                            bool nextIsNumber = (i+1 < line.size()) && isANum(line[i+1]);
+                            bool prevIsLabel = (i > startIndex) && !isANum(line[i-1]);
+                            bool prevIsInstruction = (i > startIndex) && defaultNames.count(toUppercase(line[i-1]));
+                            
+                            if(prevIsLabel && nextIsNumber && !prevIsInstruction) {
+                                content[content.size() - 1] = line[i][0];
+                            } else {
+                                content += line[i] + " ";
+                            }
+                        }
                     } else {
                         content += line[i] + " ";
                     }

@@ -5,3 +5,4 @@ compiler
 *.o2
 .vscode
 /tests
+test_results.txt

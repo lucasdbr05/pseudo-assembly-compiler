@@ -55,7 +55,7 @@ private:
             case SYNTAX: typeStr = "SYNTAX"; break;
             case SEMANTIC: typeStr = "SEMANTIC"; break;
         }
-        cerr << "[" << typeStr << " " << "ERROR "<< "] ";
+        cerr << "[" << typeStr << " " << "ERROR"<< "] ";
         if (error.line != 0) {
             cerr << "Line " << error.line << ": ";
         }
