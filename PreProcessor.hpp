@@ -73,7 +73,7 @@ private:
             vector<string> line = normalizedContent[i];
             int initLoopIndex = 0;
 
-            if(line[0].back() == ':') {
+            if(!line.empty() && !line[0].empty() && line[0].back() == ':') {
                 bool isMacroDefinition = line.size() > 1 && toUppercase(line[1]) == "MACRO";
                 if(isMacroDefinition) {
                     i = storeMacroDefinition(normalizedContent, i);
@@ -188,15 +188,26 @@ private:
         }
 
         while(r<string_size) {
-            while(r < string_size && isAlphaNumeric(line[r])) r++;
+            int prev_r = r;
+            while(r < string_size && isAlphaNumeric(line[r], false)) r++;
 
             if(r>l){
-                tokens.push_back(line.substr(l, r-l));
+                if(r < string_size && line[r] == ':') {
+                    tokens.push_back(line.substr(l, r-l+1));
+                    r++;
+                } else {
+                    tokens.push_back(line.substr(l, r-l));
+                }
             }
-            if(isSplitterOrOperator(line[r])) {
+            if(r < string_size && isSplitterOrOperator(line[r])) {
                 tokens.push_back(line.substr(r, 1));
                 r++;
             }
+            
+            if(r == prev_r && r < string_size) {
+                r++;
+            }
+            
             l = r;
 
             while(l<string_size && isEmpty(line[l])) l++;
