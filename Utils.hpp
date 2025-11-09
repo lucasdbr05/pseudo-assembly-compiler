@@ -18,3 +18,14 @@ inline string toUppercase(string str) {
     for (char& c : str) c = toupper(c);
     return str;
 }
+
+inline bool isNumeric(char c){
+
+    return ('0' <= c && c <= '9');
+}
+
+inline bool isANum(string s) {
+    bool ans = true;
+    for(auto &c : s) ans &= isNumeric(c);
+    return ans;
+}

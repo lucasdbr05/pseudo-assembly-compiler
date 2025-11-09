@@ -6,13 +6,18 @@
 #include "FileHandler.hpp"
 #include "ErrorHandler.hpp"
 #include "Symbols.hpp"
+#include "Utils.hpp"
 
 using namespace std;
 
 class OnePassAlgo {
 
     public:
-        OnePassAlgo(vector<vector<string>> inAsm, FileHandler fh) : asmCode(inAsm), memo(vector<int>(216, -1)), fileHandler(fh){
+        OnePassAlgo(vector<vector<string>> inAsm, FileHandler fh) : asmCode(inAsm),
+        memo(vector<int>(216, -1)),
+        offset(vector<int>(216, 0)),
+        fileHandler(fh)
+        {
 
             errHandler = ErrorHandler();
         };
@@ -40,7 +45,7 @@ class OnePassAlgo {
                 }
 
                 if(!defaultNames.count(line[whereIAmInLine]))
-                    errHandler.logSyntaxError("This directive doesn't exist", (int)(wordsOccupied.size())+1);
+                    errHandler.logSyntaxError("This instruction doesn't exist", (int)(wordsOccupied.size())+1);
                 
                 // ele quer q pare a compilação aqui? kkkkkk;
                 Symbol operation;
@@ -55,10 +60,14 @@ class OnePassAlgo {
                 
 
                 if(
-                    (line.size() - whereIAmInLine-1) != operation.parameter_spaces &&
+                    (
+                    (line.size() - whereIAmInLine-1) != operation.parameter_spaces ||
+                    ((line.size() - whereIAmInLine-1) != 2 || !(isANum(line[whereIAmInLine+2])))
+                ) &&
                     operation.code != "SPACE"
                 ){
-                     errHandler.logSyntaxError("This number of parameters is not supported", (int)(wordsOccupied.size())+1);
+
+                    errHandler.logSyntaxError("This number of parameters is not supported", (int)(wordsOccupied.size())+1);
                 }
 
                 if(operation.code == "SPACE"){
@@ -91,25 +100,28 @@ class OnePassAlgo {
                     continue;
                 }
                 
-                memo[memoPos]= operation.opcode;
+                memo[memoPos] = operation.opcode;
                 memoPos++;
                 whereIAmInLine++;
                 wordsOccupied.push_back(1+operation.parameter_spaces);
                 
 
                 for(int i = whereIAmInLine; i < line.size(); i++){
+                    if(isANum(line[i])){
+                        
+                        offset[memoPos-1] += stoi(line[i]);
+                        continue;
+                    }
 
                     if(symbolList.count(line[i])){
                         
                         auto[pos, seen, links] = symbolList[line[i]];
                         if(seen) memo[memoPos] = pos;
-                        else links.push_back(memoPos);
+                        else memo[memoPos] = links.back(), links.push_back(memoPos);
                         symbolList[line[i]] = make_tuple(pos, seen, links);
                         memoPos++;
                         continue;
                     }
-
-                    // cout << line[i] << '\n';
 
                     symbolList[line[i]] = make_tuple(-1, false, vector<int>({-1, memoPos}));
                     memoPos++;
@@ -125,6 +137,7 @@ class OnePassAlgo {
         ErrorHandler errHandler;
         unordered_map<string, tuple<int, bool, vector<int>>> symbolList;
         vector<int> memo;
+        vector<int> offset;
         vector<int> wordsOccupied;
         FileHandler fileHandler;
         int memoPos = 0;
@@ -134,12 +147,9 @@ class OnePassAlgo {
 
             int memoPos = 0, id = 0;
             vector<int> wordsCopy = wordsOccupied;
-
+            
+            string line = "";
             while(id < wordsCopy.size()){
-
-                string line = "end ";
-
-                line += (to_string(memoPos)) + ": ";
 
                 while(wordsCopy[id]){
 
@@ -147,86 +157,52 @@ class OnePassAlgo {
                     memoPos++;
                     wordsCopy[id]--;
                 }
-                line.push_back('\n');
-                lines.push_back(line);
+                // lines.push_back(line);
                 id++;
             }
             
-            lines.push_back("\n\n");
-
-            auto smbList = convertSymbolList();
-
-            for(auto line : smbList)
-                lines.push_back(line);
+            for(auto [symbol, linei] : symbolList){
+                auto[val, seen, links] = linei;
+                if(links.back() != -1) line += (to_string(val) + " " + to_string(links.back()) + " ");
+            }
             
+            lines.push_back(line);
+            lines.push_back("\n\n");
             fileHandler.writeFile(".o1", lines);
         }
 
         void o2(){
 
             for(auto[ini, ti] : symbolList){
-
+                
                 auto[val, seen, links] = ti;
-
+                
                 while(links.back() != -1){
-
-                    memo[links.back()] = val;
+                    
+                    memo[links.back()] = val+offset[links.back()];
                     links.pop_back();
                 }
             }
-
+            
             vector<string> lines;
-
+            
+            string line = "";
             int memoPos = 0, id = 0;
 
             while(id < wordsOccupied.size()){
-
-                string line = "end ";
-
-                line += (to_string(memoPos)) + ": ";
-
                 while(wordsOccupied[id]){
 
                     line += (to_string(memo[memoPos])) + " ";
                     memoPos++;
                     wordsOccupied[id]--;
                 }
-                line.push_back('\n');
-                lines.push_back(line);
+
                 id++;
             }
             
+            lines.push_back(line);
             lines.push_back("\n\n");
             
             fileHandler.writeFile(".o2", lines);
-        }
-
-        vector<string> convertSymbolList(){
-            
-            vector<string> tbl;
-
-            tbl.push_back("Simbolo  |  valor  |  definido  |  lista de pendencias  \n");
-
-            for(auto[simbolo, ti] : symbolList){
-
-                auto[val, seen, links] = ti;
-
-                string line = simbolo + "  |  " + to_string(val)  + 
-                "  |  " + to_string(seen) + "  |  [";
-
-                string lista = "";
-
-                int id = links.size()-1;
-                while(id > 0){
-                    lista += to_string(links[id]) + ", ";
-                    id--;
-                }
-
-                line += lista + to_string(links[0]) + "]  \n";
-
-                tbl.push_back(line);
-            }
-
-            return tbl;
         }
 };
