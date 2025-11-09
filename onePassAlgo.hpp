@@ -13,9 +13,11 @@ using namespace std;
 class OnePassAlgo {
 
     public:
-        OnePassAlgo(vector<vector<string>> inAsm, FileHandler fh) : asmCode(inAsm), memo(vector<int>(216, -1)),
-        offset(vector<int>(216, 0)),
-        fileHandler(fh)
+        OnePassAlgo(vector<vector<string>> inAsm, FileHandler fh) : 
+            asmCode(inAsm),
+            memo(vector<int>(216, -1)),
+            offset(vector<int>(216, 0)),
+            fileHandler(fh)
         {
 
             errHandler = ErrorHandler();
@@ -40,6 +42,7 @@ class OnePassAlgo {
                         labelCount++;
                     }
                 }
+                
                 if(labelCount > 1) {
                     errHandler.logSemanticError("Dois rotulos na mesma linha", currentLine);
                     currentLine++;
@@ -148,8 +151,9 @@ class OnePassAlgo {
                     
                     if(!isValidOperand(line[i])) {
                         errHandler.logLexicalError("Operando com formato invalido", currentLine);
+                    }
+                    
                     if(isANum(line[i])){
-                        
                         offset[memoPos-1] += stoi(line[i]);
                         continue;
                     }
@@ -206,7 +210,6 @@ class OnePassAlgo {
                     memoPos++;
                     wordsCopy[id]--;
                 }
-                // lines.push_back(line);
                 id++;
             }
             
