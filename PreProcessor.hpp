@@ -73,7 +73,7 @@ private:
             vector<string> line = normalizedContent[i];
             int initLoopIndex = 0;
 
-            if(line[0].back() == ':') {
+            if(!line.empty() && !line[0].empty() && line[0].back() == ':') {
                 bool isMacroDefinition = line.size() > 1 && toUppercase(line[1]) == "MACRO";
                 if(isMacroDefinition) {
                     i = storeMacroDefinition(normalizedContent, i);
@@ -87,21 +87,35 @@ private:
             
             vector<vector<string>> lines = {line};
             
-            bool isUsingMacro = macroNameDefinitionTable.count(line[0]);
+            bool isUsingMacro = macroNameDefinitionTable.count(line[initLoopIndex]);
             if(isUsingMacro) {
                 vector<string> arguments;
-                for(int i=1; i< line.size(); i++) {
-                    bool isArgument = isAlphaNumeric(line[i][0]);
-                    if(isArgument) arguments.push_back(line[i]);
+                for(int i=initLoopIndex+1; i< line.size(); i++) {
+                    if(line[i] != ",") {
+                        arguments.push_back(line[i]);
+                    }
                 } 
-                lines = macroExpantion(line[0], arguments);
+                lines = macroExpantion(line[initLoopIndex], arguments);
             }
 
             for(auto& line: lines) {   
-                for(int i=initLoopIndex; i<line.size(); i++) {
+                int startIndex = isUsingMacro ? 0 : initLoopIndex;
+                for(int i=startIndex; i<line.size(); i++) {
                     if(line[i].size() ==1 && isSplitterOrOperator(line[i][0])) {
-                        content[content.size() - 1] = line[i][0];
-                        content += (content.back() == ',' ? " ": "");
+                        if(line[i][0] == ',') {
+                            content[content.size() - 1] = line[i][0];
+                            content += " ";
+                        } else {
+                            bool nextIsNumber = (i+1 < line.size()) && isANum(line[i+1]);
+                            bool prevIsLabel = (i > startIndex) && !isANum(line[i-1]);
+                            bool prevIsInstruction = (i > startIndex) && defaultNames.count(toUppercase(line[i-1]));
+                            
+                            if(prevIsLabel && nextIsNumber && !prevIsInstruction) {
+                                content[content.size() - 1] = line[i][0];
+                            } else {
+                                content += line[i] + " ";
+                            }
+                        }
                     } else {
                         content += line[i] + " ";
                     }
@@ -134,19 +148,18 @@ private:
             macroArguments[arg] = arguments[i];
         }
 
-        for(int i=0; i<newCode.size(); i++) {
+            for(int i=0; i<newCode.size(); i++) {
             bool isUsingMacro = macroNameDefinitionTable.count(newCode[i][0]);
             vector<vector<string>> lines = {newCode[i]};
             if(isUsingMacro) {
                 vector<string> arguments;
                 for(int j=1; j< newCode[i].size(); j++) {
-                    bool isArgument = isAlphaNumeric(newCode[i][j][0]);
-                    if(isArgument) arguments.push_back(newCode[i][j]);
+                    if(newCode[i][j] != ",") {
+                        arguments.push_back(newCode[i][j]);
+                    }
                 } 
                 lines = macroExpantion(newCode[i][0], arguments);
-            }
-
-            for(auto& line:lines) {
+            }            for(auto& line:lines) {
                 for(auto& token: line) {
                     if(macroArguments.count(token)) {
                         token = macroArguments[token];
@@ -188,15 +201,26 @@ private:
         }
 
         while(r<string_size) {
-            while(r < string_size && isAlphaNumeric(line[r])) r++;
+            int prev_r = r;
+            while(r < string_size && isAlphaNumeric(line[r], false)) r++;
 
             if(r>l){
-                tokens.push_back(line.substr(l, r-l));
+                if(r < string_size && line[r] == ':') {
+                    tokens.push_back(line.substr(l, r-l+1));
+                    r++;
+                } else {
+                    tokens.push_back(line.substr(l, r-l));
+                }
             }
-            if(isSplitterOrOperator(line[r])) {
+            if(r < string_size && isSplitterOrOperator(line[r])) {
                 tokens.push_back(line.substr(r, 1));
                 r++;
             }
+            
+            if(r == prev_r && r < string_size) {
+                r++;
+            }
+            
             l = r;
 
             while(l<string_size && isEmpty(line[l])) l++;
@@ -220,9 +244,13 @@ private:
         map<string, string> correspondentArguments;
         string macroName = codeLines[currentIndex][0]; macroName.pop_back();
         vector<vector<string>> macroDefinition;
+        int argIndex = 1;
         for(int i=2; i<codeLines[currentIndex].size(); i++){
             string argument = codeLines[currentIndex][i];
-            correspondentArguments[argument] = "#" + to_string((i-1));
+            if(argument != ",") {
+                correspondentArguments[argument] = "#" + to_string(argIndex);
+                argIndex++;
+            }
         }
         currentIndex++;
         while(

@@ -8,7 +8,7 @@ using namespace std;
 class FileHandler {
 public:
     FileHandler(const string& file) : filename(file) {}
-    
+    FileHandler() {}
     string readFile() {
         ifstream file(filename);
         
