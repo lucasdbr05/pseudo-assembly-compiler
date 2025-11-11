@@ -15,7 +15,7 @@ class OnePassAlgo {
     public:
         OnePassAlgo(vector<vector<string>> inAsm, FileHandler fh) : 
             asmCode(inAsm),
-            memo(vector<int>(216, -1)),
+            memo(vector<int>(216, 0)),
             offset(vector<int>(216, 0)),
             fileHandler(fh)
         {
